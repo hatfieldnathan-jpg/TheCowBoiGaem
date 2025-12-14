@@ -3,66 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cowboy Game (Laptop Version)</title>
+    <title>Cowboy Game (HD)</title>
     <style>
-        /* --- CSS STYLES --- */
+        /* --- GLOBAL SETUP --- */
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #333;
+            background-color: #111; /* Dark grey outside the game area */
             margin: 0;
             font-family: sans-serif;
+            overflow: hidden; /* Prevents scrollbars */
         }
 
-        /* 1. LAPTOP SCREEN SIZE */
+        /* --- THE 1920x1080 GAME SCREEN --- */
         .game-container {
             position: relative;
-            /* Changed from Phone size to Laptop size */
-            width: 1024px;   
-            height: 768px;  
-            background: #000;
-            border: 8px solid #1a1a1a;
-            border-radius: 20px; /* Less rounded for laptop */
-            overflow: hidden; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            width: 1920px;
+            height: 1080px;
+            background: #000000; /* PURE BLACK BACKGROUND */
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow: hidden; /* Hides menus when they slide off-screen */
+            
+            /* This centers the menus inside the black screen */
+            display: flex;
+            justify-content: center;
+            align-items: center; 
         }
 
-        /* --- THE MENUS --- */
+        /* --- MENU WRAPPERS (These hold the image + button together) --- */
         .menu-start, .menu-main {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+            /* We don't set fixed width/height here, we let the image decide the size */
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            
+            /* Ensures the button coordinates are relative to this specific menu image */
+            display: inline-block; 
         }
 
+        /* --- IMAGES --- */
         img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* This makes the image fill the laptop screen */
+            display: block; /* Removes tiny gaps under images */
+            max-width: 100%;
+            height: auto;
         }
 
         /* --- STARTING POSITIONS --- */
         
-        /* Yellow Menu (Visible) */
+        /* Yellow Start Menu (Starts in the Middle) */
         .menu-start {
             transform: translateY(0);
-            z-index: 2;
+            z-index: 2; 
         }
 
-        /* Main Menu (Hidden Above) */
+        /* Main Menu (Starts Hidden Above the screen) */
+        /* We move it up by 1080px (the screen height) to ensure it's fully out of view */
         .menu-main {
-            transform: translateY(-100%);
+            transform: translateY(-1080px); 
             z-index: 1;
         }
 
-        /* --- ANIMATION STATE --- */
+        /* --- ANIMATION STATE (Triggered on Click) --- */
+
+        /* Move Yellow Menu DOWN (Out of view) */
         .game-container.slide-active .menu-start {
-            transform: translateY(100%);
+            transform: translateY(1080px);
         }
+
+        /* Move Main Menu DOWN (Into the center) */
         .game-container.slide-active .menu-main {
             transform: translateY(0);
         }
@@ -70,42 +79,49 @@
         /* --- INVISIBLE BUTTONS --- */
         button {
             position: absolute;
-            width: 200px; 
-            height: 60px;
-            background: transparent; 
+            width: 200px; /* Adjust if your drawn button is wider */
+            height: 60px; /* Adjust if your drawn button is taller */
+            background: transparent;
             border: none;
             cursor: pointer;
             
-            /* Enable this to see where the buttons are! */
+            /* DEBUGGING: Keep this RED BORDER on until the buttons are perfect! */
             border: 2px solid red; 
         }
 
-        /* 2. YOUR SPECIFIC COORDINATES */
-        /* You said "Menu Button is x74 y222" */
+        /* --- BUTTON COORDINATES --- */
+        /* These numbers are now relative to the IMAGE corner, not the screen corner */
+
+        /* "MENU" Button Position */
         .btn-menu {
             left: 74px;
             top: 222px;
         }
 
-        /* I assumed a position for the Back button, you can adjust this */
+        /* "BACK" Button Position (I guessed this one, adjust as needed!) */
         .btn-back {
             left: 74px;
-            top: 300px;
+            top: 350px; 
         }
+
     </style>
 </head>
 <body>
 
-    <div class="game-container">
+    <div style="transform: scale(0.6); transform-origin: center center;">
         
-        <div class="menu-main">
-            <img src="menu-main.png" alt="Main Menu">
-            <button class="btn-back" onclick="toggleMenu()"></button>
-        </div>
+        <div class="game-container">
+            
+            <div class="menu-main">
+                <img src="menu-main.png" alt="Main Menu">
+                <button class="btn-back" onclick="toggleMenu()"></button>
+            </div>
 
-        <div class="menu-start">
-            <img src="menu-yellow.png" alt="Start Menu">
-            <button class="btn-menu" onclick="toggleMenu()"></button>
+            <div class="menu-start">
+                <img src="menu-yellow.png" alt="Start Menu">
+                <button class="btn-menu" onclick="toggleMenu()"></button>
+            </div>
+
         </div>
 
     </div>

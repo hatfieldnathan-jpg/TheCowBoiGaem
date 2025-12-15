@@ -3,133 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cowboy Game (HD)</title>
+    <title>CowBoi Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ewert&display=swap" rel="stylesheet">
+
     <style>
-        /* --- GLOBAL SETUP --- */
         body {
+            background-color: #222;
+            margin: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #111; /* Dark grey outside the game area */
-            margin: 0;
-            font-family: sans-serif;
-            overflow: hidden; /* Prevents scrollbars */
+            overflow: hidden;
+            font-family: 'Ewert', cursive;
+            perspective: 1000px; /* Adds depth for the 3D animation */
         }
 
-        /* --- THE 1920x1080 GAME SCREEN --- */
-        .game-container {
-            position: relative;
-            width: 1920px;
-            height: 1080px;
-            background: #000000; /* PURE BLACK BACKGROUND */
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            overflow: hidden; /* Hides menus when they slide off-screen */
-            
-            /* This centers the menus inside the black screen */
+        /* --- COMMON CONTAINER STYLES --- */
+        .screen-container {
+            position: absolute;
+            transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); /* Smooth animation speed */
+            opacity: 0;
+            pointer-events: none; /* Prevents clicking when hidden */
             display: flex;
             justify-content: center;
-            align-items: center; 
+            align-items: center;
         }
 
-        /* --- MENU WRAPPERS (These hold the image + button together) --- */
-        .menu-start, .menu-main {
-            position: absolute;
-            /* We don't set fixed width/height here, we let the image decide the size */
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            
-            /* Ensures the button coordinates are relative to this specific menu image */
-            display: inline-block; 
+        /* --- ACTIVE STATE (VISIBLE) --- */
+        .screen-container.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(0.6) translateZ(0); /* Default scaled down size */
         }
 
-        /* --- IMAGES --- */
-        img {
-            display: block; /* Removes tiny gaps under images */
-            max-width: 100%;
-            height: auto;
-        }
-
-        /* --- STARTING POSITIONS --- */
+        /* --- HIDDEN STATES FOR ANIMATION --- */
         
-        /* Yellow Start Menu (Starts in the Middle) */
-        .menu-start {
-            transform: translateY(0);
-            z-index: 2; 
+        /* When Screen 1 leaves, it zooms BIG (towards camera) and fades */
+        #screen-1.hidden-zoom-out {
+            transform: scale(1.2); 
+            opacity: 0;
         }
 
-        /* Main Menu (Starts Hidden Above the screen) */
-        /* We move it up by 1080px (the screen height) to ensure it's fully out of view */
-        .menu-main {
-            transform: translateY(-1080px); 
-            z-index: 1;
+        /* When Screen 2 is waiting, it is SMALL (in background) */
+        #screen-2.hidden-zoom-in {
+            transform: scale(0.4);
+            opacity: 0;
+        }
+        
+        /* Vice Versa states for going back */
+        #screen-1.hidden-zoom-in {
+            transform: scale(0.4);
+            opacity: 0;
+        }
+        #screen-2.hidden-zoom-out {
+            transform: scale(1.2);
+            opacity: 0;
         }
 
-        /* --- ANIMATION STATE (Triggered on Click) --- */
 
-        /* Move Yellow Menu DOWN (Out of view) */
-        .game-container.slide-active .menu-start {
-            transform: translateY(1080px);
+        /* --- SCREEN 1: POPUP MENU --- */
+        #screen-1 {
+            width: 543px;
+            height: 587px;
         }
 
-        /* Move Main Menu DOWN (Into the center) */
-        .game-container.slide-active .menu-main {
-            transform: translateY(0);
-        }
-
-        /* --- INVISIBLE BUTTONS --- */
-        button {
+        .popup-bg {
+            box-sizing: border-box;
             position: absolute;
-            width: 200px; /* Adjust if your drawn button is wider */
-            height: 60px; /* Adjust if your drawn button is taller */
-            background: transparent;
-            border: none;
+            width: 543px;
+            height: 587px;
+            background: #FFC527;
+            border: 15px solid #B98801;
+            border-radius: 100px;
+        }
+
+        .cowboi-title {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 30px;
+            font-size: 80px;
+            line-height: 99px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .game-subtitle {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 110px;
+            font-size: 80px;
+            line-height: 99px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* --- SCREEN 2: MAIN MENU (Frame 2 - No Trees) --- */
+        #screen-2 {
+            width: 1700px;
+            height: 985px;
+        }
+
+        .mainbg {
+            box-sizing: border-box;
+            position: absolute;
+            width: 1700px;
+            height: 900px;
+            top: 40px; /* Centered visually in the container */
+            background: #FFBC04;
+            border: 10px solid #B98801;
+            border-radius: 45px;
+            transform: rotate(180deg);
+        }
+
+        .textbg {
+            box-sizing: border-box;
+            position: absolute;
+            width: 1082px;
+            height: 256.5px;
+            left: 309px;
+            top: -50px; /* Adjusted relative to container center */
+            background: #FFBC04;
+            border: 10px solid #B98801;
+            border-radius: 45px;
+        }
+
+        .borderoffset {
+            position: absolute;
+            width: 1260px;
+            height: 206px;
+            left: 268px;
+            top: 50px;
+            background: #FFBC04;
+            border-radius: 45px;
+        }
+
+        .main-title {
+            position: absolute;
+            width: 962px;
+            height: 128px;
+            left: 369px;
+            top: -20px;
+            font-size: 120px;
+            color: #5F4600;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .button-frame {
+            box-sizing: border-box;
+            position: absolute;
+            width: 439px;
+            height: 734px;
+            left: 615px;
+            top: 150px;
+            background: #FFC527;
+            border: 10px solid #B98801;
+            border-radius: 75px;
+        }
+
+        /* --- BUTTON STYLES --- */
+        .btn-container {
+            position: absolute;
             cursor: pointer;
-            
-            /* DEBUGGING: Keep this RED BORDER on until the buttons are perfect! */
-            border: 2px solid red; 
+            z-index: 50;
+            transition: transform 0.1s;
+        }
+        .btn-container:hover { transform: scale(1.02); }
+        .btn-container:active { transform: scale(0.95); }
+
+        .btn-shadow {
+            position: absolute;
+            background: #B98801;
+            border-radius: 100px;
+        }
+        .btn-main {
+            position: absolute;
+            background: #FFBC04;
+            border-radius: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-text {
+            color: #000000;
+            text-align: center;
         }
 
-        /* --- BUTTON COORDINATES --- */
-        /* These numbers are now relative to the IMAGE corner, not the screen corner */
+        /* Screen 1 Buttons */
+        #s1-menu-btn { width: 443px; height: 140px; left: 50px; top: 222px; }
+        #s1-menu-btn .btn-shadow { width: 386px; height: 119px; left: 0; top: 15px; }
+        #s1-menu-btn .btn-main { width: 386px; height: 115px; left: 0; top: 0; }
+        #s1-menu-btn .btn-text { font-size: 79px; line-height: 98px; }
 
-        /* "MENU" Button Position */
-        .btn-menu {
-            left: 74px;
-            top: 222px;
-        }
+        #s1-back-btn { width: 443px; height: 140px; left: 50px; top: 407px; }
+        #s1-back-btn .btn-shadow { width: 386px; height: 119px; left: 0; top: 15px; }
+        #s1-back-btn .btn-main { width: 386px; height: 115px; left: 0; top: 0; }
+        #s1-back-btn .btn-text { font-size: 79px; line-height: 98px; }
 
-        /* "BACK" Button Position (I guessed this one, adjust as needed!) */
-        .btn-back {
-            left: 74px;
-            top: 350px; 
-        }
+        /* Screen 2 Buttons */
+        #s2-new-btn { width: 386px; height: 161px; left: 636px; top: 210px; }
+        #s2-new-btn .btn-shadow { width: 386px; height: 128px; top: 16px; }
+        #s2-new-btn .btn-main { width: 386px; height: 124px; top: 0; }
+        #s2-new-btn .btn-text { font-size: 60px; }
+
+        #s2-load-btn { width: 410px; height: 144px; left: 642px; top: 440px; }
+        #s2-load-btn .btn-shadow { width: 386px; height: 128px; top: 16px; }
+        #s2-load-btn .btn-main { width: 386px; height: 124px; top: 0; }
+        #s2-load-btn .btn-text { font-size: 57px; }
+
+        #s2-back-btn { width: 443px; height: 150px; left: 642px; top: 660px; }
+        #s2-back-btn .btn-shadow { width: 386px; height: 128px; top: 16px; }
+        #s2-back-btn .btn-main { width: 386px; height: 124px; top: 0; }
+        #s2-back-btn .btn-text { font-size: 79px; }
 
     </style>
 </head>
 <body>
 
-    <div style="transform: scale(0.6); transform-origin: center center;">
-        
-        <div class="game-container">
-            
-            <div class="menu-main">
-                <img src="menu-main.png" alt="Main Menu">
-                <button class="btn-back" onclick="toggleMenu()"></button>
-            </div>
+    <div id="screen-1" class="screen-container active">
+        <div class="popup-bg"></div>
+        <div class="cowboi-title">cowboi</div>
+        <div class="game-subtitle">game</div>
 
-            <div class="menu-start">
-                <img src="menu-yellow.png" alt="Start Menu">
-                <button class="btn-menu" onclick="toggleMenu()"></button>
-            </div>
-
+        <div id="s1-menu-btn" class="btn-container" onclick="goToMainMenu()">
+            <div class="btn-shadow"></div>
+            <div class="btn-main"><span class="btn-text">menu</span></div>
         </div>
 
+        <div id="s1-back-btn" class="btn-container" onclick="alert('Exit game logic here')">
+            <div class="btn-shadow"></div>
+            <div class="btn-main"><span class="btn-text">back</span></div>
+        </div>
+    </div>
+
+    <div id="screen-2" class="screen-container hidden-zoom-in">
+        <div class="mainbg"></div>
+        <div class="borderoffset"></div>
+        <div class="textbg"></div>
+        <div class="main-title">CowBoi Game</div>
+
+        <div class="button-frame"></div>
+
+        <div id="s2-new-btn" class="btn-container" onclick="alert('Start Game!')">
+            <div class="btn-shadow"></div>
+            <div class="btn-main"><span class="btn-text">new game</span></div>
+        </div>
+
+        <div id="s2-load-btn" class="btn-container" onclick="alert('Load Game!')">
+            <div class="btn-shadow"></div>
+            <div class="btn-main"><span class="btn-text">load game</span></div>
+        </div>
+
+        <div id="s2-back-btn" class="btn-container" onclick="goToPopup()">
+            <div class="btn-shadow"></div>
+            <div class="btn-main"><span class="btn-text">back</span></div>
+        </div>
     </div>
 
     <script>
-        function toggleMenu() {
-            const container = document.querySelector('.game-container');
-            container.classList.toggle('slide-active');
+        const s1 = document.getElementById('screen-1');
+        const s2 = document.getElementById('screen-2');
+
+        function goToMainMenu() {
+            // Screen 1 zooms OUT towards camera and fades
+            s1.classList.remove('active');
+            s1.classList.remove('hidden-zoom-in'); // clear previous state
+            s1.classList.add('hidden-zoom-out');
+
+            // Screen 2 zooms IN from background
+            s2.classList.remove('hidden-zoom-in');
+            s2.classList.remove('hidden-zoom-out'); // clear previous state
+            s2.classList.add('active');
+        }
+
+        function goToPopup() {
+            // Screen 2 shrinks back into background
+            s2.classList.remove('active');
+            s2.classList.add('hidden-zoom-in');
+
+            // Screen 1 comes back from camera
+            s1.classList.remove('hidden-zoom-out');
+            s1.classList.add('active');
         }
     </script>
 
